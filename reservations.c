@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <time.h>
 
 // These will be initialized in main() from the command line.
 int seat_count;
@@ -20,10 +21,13 @@ int reserve_seat(int n)
     //
     // This function should also increment seat_taken_count if the seat
     // wasn't already taken.
-    
-    // TODO
 
-    return 0;  // Change as necessary--included so it will build
+    if (seat_taken[n])
+        return -1;
+
+    seat_taken[n] = 1;
+    seat_taken_count++;
+    return 0;
 }
 
 int free_seat(int n)
@@ -36,9 +40,12 @@ int free_seat(int n)
     // This function should also decrement seat_taken_count if the seat
     // wasn't already free.
 
-    // TODO
+    if (!seat_taken[n])
+        return -1;
 
-    return 0;  // Change as necessary--included so it will build
+    seat_taken[n] = 0;
+    seat_taken_count--;
+    return 0;
 }
 
 int verify_seat_count(void) {
@@ -81,7 +88,7 @@ void *seat_broker(void *arg)
         }
 
         if (!verify_seat_count()) {
-            printf("Broker %d: the seat count seems to be off! " \
+            printf("Broker %d: the seat count seems to be off! "
                    "I quit!\n", *id);
             return NULL;
         }
@@ -114,7 +121,7 @@ int main(int argc, char *argv[])
     int *thread_id = calloc(broker_count, sizeof *thread_id);
 
     srand(time(NULL) + getpid());
-    
+
     // Launch all brokers
     for (int i = 0; i < broker_count; i++) {
         thread_id[i] = i;
@@ -130,4 +137,3 @@ int main(int argc, char *argv[])
     free(thread);
     free(seat_taken);
 }
-
