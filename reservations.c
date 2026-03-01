@@ -11,6 +11,7 @@ int *seat_taken;  // Array of seats
 int transaction_count;
 
 int seat_taken_count = 0;
+pthread_mutex_t seat_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int reserve_seat(int n)
 {
@@ -22,11 +23,17 @@ int reserve_seat(int n)
     // This function should also increment seat_taken_count if the seat
     // wasn't already taken.
 
-    if (seat_taken[n])
+    pthread_mutex_lock(&seat_mutex);
+
+    if (seat_taken[n]) {
+        pthread_mutex_unlock(&seat_mutex);
         return -1;
+    }
 
     seat_taken[n] = 1;
     seat_taken_count++;
+
+    pthread_mutex_unlock(&seat_mutex);
     return 0;
 }
 
@@ -40,11 +47,17 @@ int free_seat(int n)
     // This function should also decrement seat_taken_count if the seat
     // wasn't already free.
 
-    if (!seat_taken[n])
+    pthread_mutex_lock(&seat_mutex);
+
+    if (!seat_taken[n]) {
+        pthread_mutex_unlock(&seat_mutex);
         return -1;
+    }
 
     seat_taken[n] = 0;
     seat_taken_count--;
+
+    pthread_mutex_unlock(&seat_mutex);
     return 0;
 }
 
